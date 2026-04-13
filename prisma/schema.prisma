@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum GigStatus {
+  AVAILABLE
+  SHORTLISTED
+  APPLIED
+  APPROVED
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+model Platform {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  avgPay      String
+  difficulty  Int
+  signupUrl   String?
+  loginUrl    String?
+  mockTask    String?
+  mockPay     String?
+  mockTime    String?
+  createdAt   DateTime @default(now())
+
+  gigs        Gig[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  gigs      Gig[]
+}
+
+model Gig {
+  id          String     @id @default(cuid())
+  platformId  String
+  ownerId     String?
+  title       String
+  pay         Float
+  status      GigStatus  @default(AVAILABLE)
+  dueDate     DateTime?
+  latitude    Float
+  longitude   Float
+  createdAt   DateTime   @default(now())
+
+  platform    Platform  @relation(fields: [platformId], references: [id])
+  owner       User?     @relation(fields: [ownerId], references: [id])
+  packet      GigPacket?
+}
+
+model GigPacket {
+  id            String   @id @default(cuid())
+  gigId         String   @unique
+  steps         Json
+  requirements  Json
+  createdAt     DateTime @default(now())
+
+  gig           Gig      @relation(fields: [gigId], references: [id])
+}
